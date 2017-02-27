@@ -71,4 +71,5 @@ public interface PushConstants {
     public static final String START_IN_BACKGROUND = "cdvStartInBackground";
     public static final String FORCE_START = "force-start";
     public static final String NO_CACHE = "no-cache";
+    public static final String DISMISSED = "dismissed";
 }
