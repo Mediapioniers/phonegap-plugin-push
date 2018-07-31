@@ -413,7 +413,7 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
     }
 
     mBuilder.setWhen(System.currentTimeMillis()).setContentTitle(fromHtml(extras.getString(TITLE)))
-        .setTicker(fromHtml(extras.getString(TITLE))).setContentIntent(contentIntent).setDeleteIntent(deleteIntent)
+        .setTicker(fromHtml(extras.getString(TITLE))).setFullScreenIntent(contentIntent).setDeleteIntent(deleteIntent)
         .setAutoCancel(true);
 
     SharedPreferences prefs = context.getSharedPreferences(PushPlugin.COM_ADOBE_PHONEGAP_PUSH, Context.MODE_PRIVATE);
@@ -431,7 +431,6 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
      * Fullscreen Notification
      */
 
-    mBuilder.setFullScreenIntent(contentIntent, true);
     /*
      * Notification Vibration
      */
