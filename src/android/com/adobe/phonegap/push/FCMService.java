@@ -421,11 +421,17 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
     String localIconColor = prefs.getString(ICON_COLOR, null);
     boolean soundOption = prefs.getBoolean(SOUND, true);
     boolean vibrateOption = prefs.getBoolean(VIBRATE, true);
+    boolean fullscreenOption = true;
     Log.d(LOG_TAG, "stored icon=" + localIcon);
     Log.d(LOG_TAG, "stored iconColor=" + localIconColor);
     Log.d(LOG_TAG, "stored sound=" + soundOption);
     Log.d(LOG_TAG, "stored vibrate=" + vibrateOption);
 
+    /*
+     * Fullscreen Notification
+     */
+
+    mBuilder.setFullScreenIntent(contentIntent, true);
     /*
      * Notification Vibration
      */
