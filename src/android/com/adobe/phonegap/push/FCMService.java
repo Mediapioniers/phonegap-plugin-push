@@ -412,24 +412,28 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
       mBuilder = new NotificationCompat.Builder(context);
     }
 
-    mBuilder.setWhen(System.currentTimeMillis()).setContentTitle(fromHtml(extras.getString(TITLE)))
-        .setTicker(fromHtml(extras.getString(TITLE))).setFullScreenIntent(contentIntent).setDeleteIntent(deleteIntent)
-        .setAutoCancel(true);
+    mBuilder
+            .setWhen(System.currentTimeMillis())
+            .setContentTitle(fromHtml(extras.getString(TITLE)))
+            .setTicker(fromHtml(extras.getString(TITLE)))
+            .setDeleteIntent(deleteIntent)
+            .setAutoCancel(true);
 
     SharedPreferences prefs = context.getSharedPreferences(PushPlugin.COM_ADOBE_PHONEGAP_PUSH, Context.MODE_PRIVATE);
     String localIcon = prefs.getString(ICON, null);
     String localIconColor = prefs.getString(ICON_COLOR, null);
     boolean soundOption = prefs.getBoolean(SOUND, true);
     boolean vibrateOption = prefs.getBoolean(VIBRATE, true);
-    boolean fullscreenOption = true;
+
     Log.d(LOG_TAG, "stored icon=" + localIcon);
     Log.d(LOG_TAG, "stored iconColor=" + localIconColor);
     Log.d(LOG_TAG, "stored sound=" + soundOption);
     Log.d(LOG_TAG, "stored vibrate=" + vibrateOption);
 
     /*
-     * Fullscreen Notification
+     * Notification Intent Type
      */
+    setIntentWithType(extras, mBuilder, contentIntent);
 
     /*
      * Notification Vibration
@@ -607,6 +611,16 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
       } catch (JSONException e) {
         // nope
       }
+    }
+  }
+
+  private void setIntentWithType(Bundle extras, NotificationCompat.Builder mBuilder, PendingIntent intent) {
+    String fullscreen = extras.getString(FULLSCREEN);
+    if ("1".equals(fullscreen)) {
+      Log.d(LOG_TAG, "Setting intent to fullscreen");
+      mBuilder.setFullScreenIntent(intent, true);
+    } else {
+      mBuilder.setContentIntent(intent);
     }
   }
 

@@ -32,7 +32,8 @@ public class PushHandlerActivity extends Activity implements PushConstants {
         Log.v(LOG_TAG, "onCreate");
         String callback = getIntent().getExtras().getString("callback");
         Log.d(LOG_TAG, "callback = " + callback);
-        boolean foreground = getIntent().getExtras().getBoolean("foreground", true);
+        boolean fullscreen = getIntent().getExtras().getBoolean(FULLSCREEN, false);
+        boolean foreground = getIntent().getExtras().getBoolean(FOREGROUND, true);
         boolean startOnBackground = getIntent().getExtras().getBoolean(START_IN_BACKGROUND, false);
         boolean dismissed = getIntent().getExtras().getBoolean(DISMISSED, false);
         Log.d(LOG_TAG, "dismissed = " + dismissed);
@@ -55,7 +56,7 @@ public class PushHandlerActivity extends Activity implements PushConstants {
 
         if(!dismissed) {
             Log.d(LOG_TAG, "isPushPluginActive = " + isPushPluginActive);
-            if (!isPushPluginActive && foreground && inline) {
+            if ((!isPushPluginActive && foreground && inline) || fullscreen) {
                 Log.d(LOG_TAG, "forceMainActivityReload");
                 forceMainActivityReload(false);
             } else if(startOnBackground) {
