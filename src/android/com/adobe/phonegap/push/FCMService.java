@@ -49,7 +49,7 @@ import java.util.Map;
 import java.security.SecureRandom;
 
 @SuppressLint("NewApi")
-public class FCMService extends FirebaseMessagingService implements PushConstants {
+public class FCMService implements PushConstants {
 
   private static final String LOG_TAG = "Push_FCMService";
   private static HashMap<Integer, ArrayList<String>> messageMap = new HashMap<Integer, ArrayList<String>>();
@@ -68,8 +68,7 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
     }
   }
 
-  @Override
-  public void onMessageReceived(RemoteMessage message) {
+  public void handleMessage(Context context, RemoteMessage message) {
 
     String from = message.getFrom();
     Log.d(LOG_TAG, "onMessage - from: " + from);
@@ -87,20 +86,18 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
       extras.putString(entry.getKey(), entry.getValue());
     }
 
-    if (extras != null && isAvailableSender(from)) {
-      Context applicationContext = getApplicationContext();
-
-      SharedPreferences prefs = applicationContext.getSharedPreferences(PushPlugin.COM_ADOBE_PHONEGAP_PUSH,
+    if (extras != null && isAvailableSender(context, from)) {
+      SharedPreferences prefs = context.getSharedPreferences(PushPlugin.COM_ADOBE_PHONEGAP_PUSH,
           Context.MODE_PRIVATE);
       boolean forceShow = prefs.getBoolean(FORCE_SHOW, false);
       boolean clearBadge = prefs.getBoolean(CLEAR_BADGE, false);
       String messageKey = prefs.getString(MESSAGE_KEY, MESSAGE);
       String titleKey = prefs.getString(TITLE_KEY, TITLE);
 
-      extras = normalizeExtras(applicationContext, extras, messageKey, titleKey);
+      extras = normalizeExtras(context, extras, messageKey, titleKey);
 
       if (clearBadge) {
-        PushPlugin.setApplicationIconBadgeNumber(getApplicationContext(), 0);
+        PushPlugin.setApplicationIconBadgeNumber(context, 0);
       }
 
       // if we are in the foreground and forceShow is `false` only send data
@@ -116,7 +113,7 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
         extras.putBoolean(FOREGROUND, true);
         extras.putBoolean(COLDSTART, false);
 
-        showNotificationIfPossible(applicationContext, extras);
+        showNotificationIfPossible(context, extras);
       }
       // if we are not in the foreground always send notification if the data has at least a message or title
       else {
@@ -124,7 +121,7 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
         extras.putBoolean(FOREGROUND, false);
         extras.putBoolean(COLDSTART, PushPlugin.isActive());
 
-        showNotificationIfPossible(applicationContext, extras);
+        showNotificationIfPossible(context, extras);
       }
     }
   }
@@ -934,8 +931,8 @@ public class FCMService extends FirebaseMessagingService implements PushConstant
       return null;
   }
 
-  private boolean isAvailableSender(String from) {
-    SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(PushPlugin.COM_ADOBE_PHONEGAP_PUSH,
+  private boolean isAvailableSender(Context context, String from) {
+    SharedPreferences sharedPref = context.getSharedPreferences(PushPlugin.COM_ADOBE_PHONEGAP_PUSH,
         Context.MODE_PRIVATE);
     String savedSenderID = sharedPref.getString(SENDER_ID, "");
 
