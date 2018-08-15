@@ -49,10 +49,20 @@ import java.util.Map;
 import java.security.SecureRandom;
 
 @SuppressLint("NewApi")
-public class FCMService implements PushConstants {
+public class FCMService extends BroadcastReceiver implements PushConstants {
 
   private static final String LOG_TAG = "Push_FCMService";
   private static HashMap<Integer, ArrayList<String>> messageMap = new HashMap<Integer, ArrayList<String>>();
+
+  @Override
+  public void onReceive(Context context, Intent intent) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Action: " + intent.getAction() + "\n");
+    sb.append("URI: " + intent.toUri(Intent.URI_INTENT_SCHEME).toString() + "\n");
+    String log = sb.toString();
+    Log.d(TAG, log);
+    Toast.makeText(context, log, Toast.LENGTH_LONG).show();
+  }
 
   public void setNotification(int notId, String message) {
     ArrayList<String> messageList = messageMap.get(notId);
