@@ -5,10 +5,12 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
@@ -24,6 +26,8 @@ import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.WearableExtender;
 import android.support.v4.app.RemoteInput;
@@ -51,33 +55,39 @@ import java.util.Map;
 import java.security.SecureRandom;
 
 @SuppressLint("NewApi")
-public class FCMService extends BroadcastReceiver implements PushConstants {
+public class FCMService extends Service implements PushConstants {
 
   private static final String LOG_TAG = "Push_FCMService";
   private static HashMap<Integer, ArrayList<String>> messageMap = new HashMap<Integer, ArrayList<String>>();
 
-  @Override
-  public void onReceive(Context context, Intent intent) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("Action: " + intent.getAction() + "\n");
-    sb.append("URI: " + intent.toUri(Intent.URI_INTENT_SCHEME).toString() + "\n");
-    String log = sb.toString();
-    Log.d(LOG_TAG, log);
-    Toast.makeText(context, log, Toast.LENGTH_LONG).show();
+  BroadcastReceiver mReceiver;
+
+  public class MyReceiver extends BroadcastReceiver {
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      StringBuilder sb = new StringBuilder();
+      sb.append("Action: " + intent.getAction() + "\n");
+      sb.append("URI: " + intent.toUri(Intent.URI_INTENT_SCHEME).toString() + "\n");
+      String log = sb.toString();
+      Log.d(LOG_TAG, log);
+      Toast.makeText(context, log, Toast.LENGTH_LONG).show();
+    }
   }
 
-  public void setNotification(int notId, String message) {
-    ArrayList<String> messageList = messageMap.get(notId);
-    if (messageList == null) {
-      messageList = new ArrayList<String>();
-      messageMap.put(notId, messageList);
-    }
+  @Override
+  public void onCreate() {
+    // get an instance of the receiver in your service
+    IntentFilter filter = new IntentFilter();
+    filter.addAction(BROADCAST_NOTIFICATION);
+    mReceiver = new MyReceiver();
+    registerReceiver(mReceiver, filter);
+  }
 
-    if (message.isEmpty()) {
-      messageList.clear();
-    } else {
-      messageList.add(message);
-    }
+  @Nullable
+  @Override
+  public IBinder onBind(Intent intent) {
+    return null;
   }
 
   public void handleMessage(Context context, RemoteMessage message) {
@@ -135,6 +145,20 @@ public class FCMService extends BroadcastReceiver implements PushConstants {
 
         showNotificationIfPossible(context, extras);
       }
+    }
+  }
+
+  public void setNotification(int notId, String message) {
+    ArrayList<String> messageList = messageMap.get(notId);
+    if (messageList == null) {
+      messageList = new ArrayList<String>();
+      messageMap.put(notId, messageList);
+    }
+
+    if (message.isEmpty()) {
+      messageList.clear();
+    } else {
+      messageList.add(message);
     }
   }
 
