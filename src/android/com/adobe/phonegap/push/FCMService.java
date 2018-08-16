@@ -5,6 +5,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -29,6 +30,7 @@ import android.support.v4.app.RemoteInput;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -60,7 +62,7 @@ public class FCMService extends BroadcastReceiver implements PushConstants {
     sb.append("Action: " + intent.getAction() + "\n");
     sb.append("URI: " + intent.toUri(Intent.URI_INTENT_SCHEME).toString() + "\n");
     String log = sb.toString();
-    Log.d(TAG, log);
+    Log.d(LOG_TAG, log);
     Toast.makeText(context, log, Toast.LENGTH_LONG).show();
   }
 
@@ -347,7 +349,7 @@ public class FCMService extends BroadcastReceiver implements PushConstants {
       Log.d(LOG_TAG, "create notification");
 
       if (title == null || title.isEmpty()) {
-        extras.putString(TITLE, getAppName(this));
+        extras.putString(TITLE, getAppName(context));
       }
 
       createNotification(context, extras);
@@ -355,12 +357,12 @@ public class FCMService extends BroadcastReceiver implements PushConstants {
 
     if (!PushPlugin.isActive() && "1".equals(forceStart)) {
       Log.d(LOG_TAG, "app is not running but we should start it and put in background");
-      Intent intent = new Intent(this, PushHandlerActivity.class);
+      Intent intent = new Intent(context, PushHandlerActivity.class);
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
       intent.putExtra(PUSH_BUNDLE, extras);
       intent.putExtra(START_IN_BACKGROUND, true);
       intent.putExtra(FOREGROUND, false);
-      startActivity(intent);
+      context.startActivity(intent);
     } else if ("1".equals(contentAvailable)) {
       Log.d(LOG_TAG, "app is not running and content available true");
       Log.d(LOG_TAG, "send notification event");
@@ -369,30 +371,30 @@ public class FCMService extends BroadcastReceiver implements PushConstants {
   }
 
   public void createNotification(Context context, Bundle extras) {
-    NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    String appName = getAppName(this);
+    NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+    String appName = getAppName(context);
     String packageName = context.getPackageName();
     Resources resources = context.getResources();
 
     int notId = parseInt(NOT_ID, extras);
-    Intent notificationIntent = new Intent(this, PushHandlerActivity.class);
+    Intent notificationIntent = new Intent(context, PushHandlerActivity.class);
     notificationIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
     notificationIntent.putExtra(PUSH_BUNDLE, extras);
     notificationIntent.putExtra(NOT_ID, notId);
 
     SecureRandom random = new SecureRandom();
     int requestCode = random.nextInt();
-    PendingIntent contentIntent = PendingIntent.getActivity(this, requestCode, notificationIntent,
+    PendingIntent contentIntent = PendingIntent.getActivity(context, requestCode, notificationIntent,
         PendingIntent.FLAG_UPDATE_CURRENT);
 
-    Intent dismissedNotificationIntent = new Intent(this, PushDismissedHandler.class);
+    Intent dismissedNotificationIntent = new Intent(context, PushDismissedHandler.class);
     dismissedNotificationIntent.putExtra(PUSH_BUNDLE, extras);
     dismissedNotificationIntent.putExtra(NOT_ID, notId);
     dismissedNotificationIntent.putExtra(DISMISSED, true);
     dismissedNotificationIntent.setAction(PUSH_DISMISSED);
 
     requestCode = random.nextInt();
-    PendingIntent deleteIntent = PendingIntent.getBroadcast(this, requestCode, dismissedNotificationIntent,
+    PendingIntent deleteIntent = PendingIntent.getBroadcast(context, requestCode, dismissedNotificationIntent,
         PendingIntent.FLAG_CANCEL_CURRENT);
 
     NotificationCompat.Builder mBuilder = null;
@@ -474,7 +476,7 @@ public class FCMService extends BroadcastReceiver implements PushConstants {
      * - if none, we don't set the large icon
      *
      */
-    setNotificationLargeIcon(extras, packageName, resources, mBuilder);
+    setNotificationLargeIcon(context, extras, packageName, resources, mBuilder);
 
     /*
      * Notification Sound
@@ -516,7 +518,7 @@ public class FCMService extends BroadcastReceiver implements PushConstants {
     /*
      * Notification add actions
      */
-    createActions(extras, mBuilder, resources, packageName, notId);
+    createActions(context, extras, mBuilder, resources, packageName, notId);
 
     mNotificationManager.notify(appName, notId, mBuilder.build());
   }
@@ -528,7 +530,7 @@ public class FCMService extends BroadcastReceiver implements PushConstants {
     intent.putExtra(NOT_ID, notId);
   }
 
-  private void createActions(Bundle extras, NotificationCompat.Builder mBuilder, Resources resources,
+  private void createActions(Context context, Bundle extras, NotificationCompat.Builder mBuilder, Resources resources,
       String packageName, int notId) {
     Log.d(LOG_TAG, "create actions: with in-line");
     String actions = extras.getString(ACTIONS);
@@ -552,32 +554,32 @@ public class FCMService extends BroadcastReceiver implements PushConstants {
             Log.d(LOG_TAG, "Version: " + android.os.Build.VERSION.SDK_INT + " = " + android.os.Build.VERSION_CODES.M);
             if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.M) {
               Log.d(LOG_TAG, "push activity");
-              intent = new Intent(this, PushHandlerActivity.class);
+              intent = new Intent(context, PushHandlerActivity.class);
             } else {
               Log.d(LOG_TAG, "push receiver");
-              intent = new Intent(this, BackgroundActionButtonHandler.class);
+              intent = new Intent(context, BackgroundActionButtonHandler.class);
             }
 
             updateIntent(intent, action.getString(CALLBACK), extras, foreground, notId);
 
             if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.M) {
               Log.d(LOG_TAG, "push activity for notId " + notId);
-              pIntent = PendingIntent.getActivity(this, uniquePendingIntentRequestCode, intent,
+              pIntent = PendingIntent.getActivity(context, uniquePendingIntentRequestCode, intent,
                   PendingIntent.FLAG_ONE_SHOT);
             } else {
               Log.d(LOG_TAG, "push receiver for notId " + notId);
-              pIntent = PendingIntent.getBroadcast(this, uniquePendingIntentRequestCode, intent,
+              pIntent = PendingIntent.getBroadcast(context, uniquePendingIntentRequestCode, intent,
                   PendingIntent.FLAG_ONE_SHOT);
             }
           } else if (foreground) {
-            intent = new Intent(this, PushHandlerActivity.class);
+            intent = new Intent(context, PushHandlerActivity.class);
             updateIntent(intent, action.getString(CALLBACK), extras, foreground, notId);
-            pIntent = PendingIntent.getActivity(this, uniquePendingIntentRequestCode, intent,
+            pIntent = PendingIntent.getActivity(context, uniquePendingIntentRequestCode, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
           } else {
-            intent = new Intent(this, BackgroundActionButtonHandler.class);
+            intent = new Intent(context, BackgroundActionButtonHandler.class);
             updateIntent(intent, action.getString(CALLBACK), extras, foreground, notId);
-            pIntent = PendingIntent.getBroadcast(this, uniquePendingIntentRequestCode, intent,
+            pIntent = PendingIntent.getBroadcast(context, uniquePendingIntentRequestCode, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
           }
 
@@ -812,7 +814,7 @@ public class FCMService extends BroadcastReceiver implements PushConstants {
     return output;
   }
 
-  private void setNotificationLargeIcon(Bundle extras, String packageName, Resources resources,
+  private void setNotificationLargeIcon(Context context, Bundle extras, String packageName, Resources resources,
       NotificationCompat.Builder mBuilder) {
     String gcmLargeIcon = extras.getString(IMAGE); // from gcm
     String imageType = extras.getString(IMAGE_TYPE, IMAGE_TYPE_SQUARE);
@@ -827,7 +829,7 @@ public class FCMService extends BroadcastReceiver implements PushConstants {
         }
         Log.d(LOG_TAG, "using remote large-icon from gcm");
       } else {
-        AssetManager assetManager = getAssets();
+        AssetManager assetManager = context.getAssets();
         InputStream istr;
         try {
           istr = assetManager.open(gcmLargeIcon);
