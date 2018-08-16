@@ -64,11 +64,15 @@ public class FCMReceiver extends FirebaseMessagingService implements PushConstan
 
     Log.d(LOG_TAG, "Received notification from API" + extras.toString());
 
+    Context applicationContext = getApplicationContext();
+    String packageName = applicationContext.getPackageName();
+
     Intent intent = new Intent();
+    intent.setPackage(packageName);
     intent.setAction(BROADCAST_NOTIFICATION);
     intent.putExtra("data", message);
 
     Log.d(LOG_TAG, "Sending local broadcast");
-    LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    sendBroadcast(intent);
   }
 }
