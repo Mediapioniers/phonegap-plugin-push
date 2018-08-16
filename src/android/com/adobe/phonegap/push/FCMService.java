@@ -31,6 +31,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.WearableExtender;
 import android.support.v4.app.RemoteInput;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
@@ -55,43 +56,19 @@ import java.util.Map;
 import java.security.SecureRandom;
 
 @SuppressLint("NewApi")
-public class FCMService extends Service implements PushConstants {
+public class FCMService extends BroadcastReceiver implements PushConstants {
 
   private static final String LOG_TAG = "Push_FCMService";
   private static HashMap<Integer, ArrayList<String>> messageMap = new HashMap<Integer, ArrayList<String>>();
 
-  BroadcastReceiver mReceiver;
-
-  public class MyReceiver extends BroadcastReceiver {
-
-    @Override
-    public void onReceive(Context context, Intent intent) {
-      StringBuilder sb = new StringBuilder();
-      sb.append("Action: " + intent.getAction() + "\n");
-      sb.append("URI: " + intent.toUri(Intent.URI_INTENT_SCHEME).toString() + "\n");
-      String log = sb.toString();
-      Log.d(LOG_TAG, log);
-      Toast.makeText(context, log, Toast.LENGTH_LONG).show();
-    }
-  }
-
   @Override
-  public void onCreate() {
-    // get an instance of the receiver in your service
-    IntentFilter filter = new IntentFilter();
-    filter.addAction(BROADCAST_NOTIFICATION);
-    mReceiver = new MyReceiver();
-    registerReceiver(mReceiver, filter);
-  }
-
-  @Nullable
-  @Override
-  public IBinder onBind(Intent intent) {
-    return null;
+  public void onReceive(Context context, Intent intent) {
+    // Get extra data included in the Intent
+//    String message = intent.getStringExtra("message");
+    Log.d("receiver", "Got message");
   }
 
   public void handleMessage(Context context, RemoteMessage message) {
-
     String from = message.getFrom();
     Log.d(LOG_TAG, "onMessage - from: " + from);
 

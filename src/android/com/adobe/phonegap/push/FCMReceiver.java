@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.WearableExtender;
 import android.support.v4.app.RemoteInput;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
@@ -61,16 +62,13 @@ public class FCMReceiver extends FirebaseMessagingService implements PushConstan
       extras.putString(entry.getKey(), entry.getValue());
     }
 
-//    NotificationInfo info = CleverTapAPI.getNotificationInfo(extras);
+    Log.d(LOG_TAG, "Received notification from API" + extras.toString());
 
-//    if (info.fromCleverTap) {
-//      Log.d(LOG_TAG, "Received notification from CleverTap: " + extras.toString());
-//      CleverTapAPI.createNotification(getApplicationContext(), extras);
-//    } else {
-      Log.d(LOG_TAG, "Received notification from API" + extras.toString());
+    Intent intent = new Intent();
+    intent.setAction(BROADCAST_NOTIFICATION);
+    intent.putExtra("data", message);
 
-      FCMService fcm = new FCMService();
-      fcm.handleMessage(getApplicationContext(), message);
-//    }
+    Log.d(LOG_TAG, "Sending local broadcast");
+    LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
   }
 }
