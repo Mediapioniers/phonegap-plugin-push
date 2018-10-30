@@ -341,6 +341,10 @@ public class FCMService extends BroadcastReceiver implements PushConstants {
       Log.d(LOG_TAG, "count =[" + badgeCount + "]");
       PushPlugin.setApplicationIconBadgeNumber(context, badgeCount);
     }
+    if (badgeCount == 0) {
+      NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+      mNotificationManager.cancelAll();
+    }
 
     Log.d(LOG_TAG, "message =[" + message + "]");
     Log.d(LOG_TAG, "title =[" + title + "]");
