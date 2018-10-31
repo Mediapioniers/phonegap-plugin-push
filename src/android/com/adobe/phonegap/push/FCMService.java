@@ -66,7 +66,7 @@ public class FCMService extends BroadcastReceiver implements PushConstants {
   // Get extra data included in the Intent
 //    String message = intent.getStringExtra("message");
   Log.d("receiver", "Got message");
-  RemoteMessage message = intent.getParcelableExtra("data");
+  RemoteMessage message = intent.getParcelableExtra("message");
   handleMessage(context, message);
 }
 

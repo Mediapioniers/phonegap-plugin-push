@@ -56,37 +56,38 @@ public class FCMReceiver extends FirebaseMessagingService implements PushConstan
 
   @Override
   public void onMessageReceived(RemoteMessage message) {
-    String action = BROADCAST_NOTIFICATION;
+  Bundle extras = new Bundle();
 
-    Bundle extras = new Bundle();
+  for (Map.Entry<String, String> entry : message.getData().entrySet()) {
+  extras.putString(entry.getKey(), entry.getValue());
+}
 
-    for (Map.Entry<String, String> entry : message.getData().entrySet()) {
-      extras.putString(entry.getKey(), entry.getValue());
-    }
+Log.v(LOG_TAG, "Received notification from API" + extras.toString());
 
-    Log.v(LOG_TAG, "Received notification from API" + extras.toString());
+Context applicationContext = getApplicationContext();
+String packageName = applicationContext.getPackageName();
 
-    Context applicationContext = getApplicationContext();
-    String packageName = applicationContext.getPackageName();
+Intent intent = new Intent();
+intent.setPackage(packageName);
 
-    Intent intent = new Intent();
-    intent.setPackage(packageName);
+String action = BROADCAST_NOTIFICATION;
 
-    // String customReceiver = extras.get("receiver");
-    // if (customReceiver != null) {
-    //   Object receiverData = extras.get(customReceiver);
-    //   Log.v(LOG_TAG, "Received data type: " + receiverData.getClass());
-    //   Log.v(LOG_TAG, "Received data: " + receiverData);
-    //   intent.setAction(receiver.action);
-    // } else {
-
-      intent.setAction(BROADCAST_NOTIFICATION);
-
-    // }
-
-    intent.putExtra("data", message);
-
-    Log.d(LOG_TAG, "Sending local broadcast");
-    sendBroadcast(intent);
+String customReceiver = extras.getString("receiver");
+if (customReceiver != null) {
+  JSONObject receiverData;
+  try {
+    receiverData = new JSONObject(extras.getString(customReceiver));
+    Log.v(LOG_TAG, "Received data: " + receiverData);
+    action = receiverData.getString("action");
+  } catch (JSONException e) {
+    e.printStackTrace();
   }
+}
+
+intent.setAction(action);
+intent.putExtra("message", message);
+
+Log.d(LOG_TAG, "Sending local broadcast");
+sendBroadcast(intent);
+}
 }
