@@ -62,12 +62,12 @@ public class FCMReceiver extends FirebaseMessagingService implements PushConstan
       extras.putString(entry.getKey(), entry.getValue());
     }
 
-    String customReceiver = extras.get("receiver");
-    if (customReceiver != null) {
-      Object receiverData = extras.get(customReceiver);
-      Log.v(LOG_TAG, "Received data type: " + receiverData.getClass());
-      Log.v(LOG_TAG, "Received data: " + receiverData);
-    }
+    // String customReceiver = extras.get("receiver");
+    // if (customReceiver != null) {
+    //   Object receiverData = extras.get(customReceiver);
+    //   Log.v(LOG_TAG, "Received data type: " + receiverData.getClass());
+    //   Log.v(LOG_TAG, "Received data: " + receiverData);
+    // }
 
 
     Log.d(LOG_TAG, "Received notification from API" + extras.toString());
