@@ -70,7 +70,7 @@ public class FCMReceiver extends FirebaseMessagingService implements PushConstan
     // }
 
 
-    Log.d(LOG_TAG, "Received notification from API" + extras.toString());
+    Log.v(LOG_TAG, "Received notification from API" + extras.toString());
 
     Context applicationContext = getApplicationContext();
     String packageName = applicationContext.getPackageName();
