@@ -56,19 +56,13 @@ public class FCMReceiver extends FirebaseMessagingService implements PushConstan
 
   @Override
   public void onMessageReceived(RemoteMessage message) {
+    String action = BROADCAST_NOTIFICATION;
+
     Bundle extras = new Bundle();
 
     for (Map.Entry<String, String> entry : message.getData().entrySet()) {
       extras.putString(entry.getKey(), entry.getValue());
     }
-
-    // String customReceiver = extras.get("receiver");
-    // if (customReceiver != null) {
-    //   Object receiverData = extras.get(customReceiver);
-    //   Log.v(LOG_TAG, "Received data type: " + receiverData.getClass());
-    //   Log.v(LOG_TAG, "Received data: " + receiverData);
-    // }
-
 
     Log.v(LOG_TAG, "Received notification from API" + extras.toString());
 
@@ -77,7 +71,19 @@ public class FCMReceiver extends FirebaseMessagingService implements PushConstan
 
     Intent intent = new Intent();
     intent.setPackage(packageName);
-    intent.setAction(BROADCAST_NOTIFICATION);
+
+    // String customReceiver = extras.get("receiver");
+    // if (customReceiver != null) {
+    //   Object receiverData = extras.get(customReceiver);
+    //   Log.v(LOG_TAG, "Received data type: " + receiverData.getClass());
+    //   Log.v(LOG_TAG, "Received data: " + receiverData);
+    //   intent.setAction(receiver.action);
+    // } else {
+
+      intent.setAction(BROADCAST_NOTIFICATION);
+
+    // }
+
     intent.putExtra("data", message);
 
     Log.d(LOG_TAG, "Sending local broadcast");
