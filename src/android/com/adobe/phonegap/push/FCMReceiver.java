@@ -69,25 +69,31 @@ String packageName = applicationContext.getPackageName();
 
 Intent intent = new Intent();
 intent.setPackage(packageName);
+intent.putExtra("message", message);
 
 String action = BROADCAST_NOTIFICATION;
 
-String customReceiver = extras.getString("receiver");
-if (customReceiver != null) {
-  JSONObject receiverData;
+String customReceivers = extras.getString("receiver");
+if (customReceivers != null) {
+  JSONArray receiverArray;
+  JSONObject receiver;
   try {
-    receiverData = new JSONObject(extras.getString(customReceiver));
-    Log.v(LOG_TAG, "Received data: " + receiverData);
-    action = receiverData.getString("action");
-  } catch (JSONException e) {
+    receiverArray = new JSONArray(customReceivers);
+    for (int i = 0; i < receiverArray.length(); i++) {
+      receiver = receiverArray.getJSONObject(i);
+      Log.v(LOG_TAG, "Received data: " + receiver);
+      action = receiver.getString("action");
+      intent.setAction(action);
+      Log.v(LOG_TAG, "Sending custom broadcast");
+      sendBroadcast(intent);
+    }
+  } catch (Exception e) {
     e.printStackTrace();
   }
+} else {
+  intent.setAction(action);
+  Log.v(LOG_TAG, "Sending default broadcast");
+  sendBroadcast(intent);
 }
-
-intent.setAction(action);
-intent.putExtra("message", message);
-
-Log.d(LOG_TAG, "Sending local broadcast");
-sendBroadcast(intent);
 }
 }
