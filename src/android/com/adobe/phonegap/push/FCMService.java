@@ -1,6 +1,7 @@
 package com.adobe.phonegap.push;
 
 import android.annotation.SuppressLint;
+import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -56,18 +57,19 @@ import java.util.Map;
 import java.security.SecureRandom;
 
 @SuppressLint("NewApi")
-public class FCMService extends BroadcastReceiver implements PushConstants {
+public class FCMService extends IntentService implements PushConstants {
 
   private static final String LOG_TAG = "Push_FCMService";
   private static HashMap<Integer, ArrayList<String>> messageMap = new HashMap<Integer, ArrayList<String>>();
 
+  public FCMService() {
+    super("FCMService");
+  }
+
   @Override
-  public void onReceive(Context context, Intent intent) {
-  // Get extra data included in the Intent
-//    String message = intent.getStringExtra("message");
-  Log.d("receiver", "Got message");
+  protected void onHandleIntent(@Nullable Intent intent) {
   RemoteMessage message = intent.getParcelableExtra("message");
-  handleMessage(context, message);
+  handleMessage(getApplicationContext(), message);
 }
 
 public void handleMessage(Context context, RemoteMessage message) {
@@ -101,8 +103,13 @@ public void handleMessage(Context context, RemoteMessage message) {
       PushPlugin.setApplicationIconBadgeNumber(context, 0);
     }
 
-    // if we are in the foreground and forceShow is `false` only send data
-    if (!forceShow && PushPlugin.isInForeground()) {
+    int clearNotificationId = getClearNotificationId(extras);
+
+    // if the notification has a `clearNotification`, then clear it.
+    if(clearNotificationId != -1) {
+      PushPlugin.clearNotification(context, clearNotificationId);
+      // if we are in the foreground and forceShow is `false` only send data
+    } else if (!forceShow && PushPlugin.isInForeground()) {
       Log.d(LOG_TAG, "foreground");
       extras.putBoolean(FOREGROUND, true);
       extras.putBoolean(COLDSTART, false);
@@ -312,6 +319,20 @@ private Bundle normalizeExtras(Context context, Bundle extras, String messageKey
   } // while
 
   return newExtras;
+}
+
+private int getClearNotificationId(Bundle extras) {
+  int clearNotificationId = -1;
+  String msgcnid = extras.getString(CLEAR_NOTIFICATION);
+
+  try {
+    if (msgcnid != null) {
+      clearNotificationId = Integer.parseInt(msgcnid);
+    }
+  } catch (NumberFormatException e) {
+    Log.e(LOG_TAG, e.getLocalizedMessage(), e);
+  }
+  return clearNotificationId;
 }
 
 private int extractBadgeCount(Bundle extras) {
