@@ -1,6 +1,7 @@
 package com.adobe.phonegap.push;
 
 import android.annotation.SuppressLint;
+import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -56,18 +57,19 @@ import java.util.Map;
 import java.security.SecureRandom;
 
 @SuppressLint("NewApi")
-public class FCMService extends BroadcastReceiver implements PushConstants {
+public class FCMService extends IntentService implements PushConstants {
 
   private static final String LOG_TAG = "Push_FCMService";
   private static HashMap<Integer, ArrayList<String>> messageMap = new HashMap<Integer, ArrayList<String>>();
 
+  public FCMService() {
+    super("FCMService");
+  }
+
   @Override
-  public void onReceive(Context context, Intent intent) {
-    // Get extra data included in the Intent
-//    String message = intent.getStringExtra("message");
-    Log.d("receiver", "Got message");
+  protected void onHandleIntent(@Nullable Intent intent) {
     RemoteMessage message = intent.getParcelableExtra("message");
-    handleMessage(context, message);
+    handleMessage(getApplicationContext(), message);
   }
 
   public void handleMessage(Context context, RemoteMessage message) {
