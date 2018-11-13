@@ -105,7 +105,7 @@ public class FCMService extends BroadcastReceiver implements PushConstants {
 
       // if the notification has a `clearNotification`, then clear it.
       if(clearNotificationId != -1) {
-        PushPlugin.clearNotification(getApplicationContext(), clearNotificationId);
+        PushPlugin.clearNotification(context, clearNotificationId);
       // if we are in the foreground and forceShow is `false` only send data
       } else if (!forceShow && PushPlugin.isInForeground()) {
         Log.d(LOG_TAG, "foreground");
