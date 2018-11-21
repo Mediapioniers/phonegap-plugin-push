@@ -13,7 +13,7 @@
 static char launchNotificationKey;
 static char coldstartKey;
 NSString *const pushPluginApplicationDidBecomeActiveNotification = @"pushPluginApplicationDidBecomeActiveNotification";
-
+NSString *const broadcastNotification = @"com.adobe.phonegap.push.BROADCAST_NOTIFICATION";
 
 @implementation AppDelegate (notification)
 
@@ -79,7 +79,40 @@ NSString *const pushPluginApplicationDidBecomeActiveNotification = @"pushPluginA
 }
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-    NSLog(@"didReceiveNotification with fetchCompletionHandler");
+    NSString* action = broadcastNotification;
+
+    id obj = [userInfo objectForKey:@"receiver"];
+    if(obj != (id)[NSNull null]) {
+        NSError *error;
+        NSString *jsonString = [obj stringValue];
+        NSData *customReceivers = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+        NSArray *receiverArray = [NSJSONSerialization JSONObjectWithData:customReceivers
+                                  options:NSJSONReadingMutableContainers
+                                  error:&error];
+        if(!receiverArray) {
+            NSLog(@"Got an error: %@", error)
+        } else {
+            for(id object in receiverArray) {
+                if([object isKindOfClass:[NSDictionary class]]) {
+                    NSDictionary *receiver = object;
+                    NSLog(@"Received data: %@", receiver);
+                    action = [receiver objectForKey:@"action"];
+
+                    NSLog(@"Sending custom internal notification");
+                    [[NSNotificationCenter defaultCenter]
+                        postNotificationName:action
+                        object: userInfo];
+                }
+            }
+        }
+    } else {
+        NSLog(@"Sending default internal notification");
+        [[NSNotificationCenter defaultCenter]
+            postNotificationName:action
+            object: userInfo];
+    }
+
+    NSLog(@"didReceiveNotification with fetchCompletionHandler")
 
     // app is in the background or inactive, so only call notification callback if this is a silent push
     if (application.applicationState != UIApplicationStateActive) {
@@ -154,7 +187,7 @@ NSString *const pushPluginApplicationDidBecomeActiveNotification = @"pushPluginA
 - (void)pushPluginOnApplicationDidBecomeActive:(NSNotification *)notification {
 
     NSLog(@"active");
-    
+
     NSString *firstLaunchKey = @"firstLaunchKey";
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"phonegap-plugin-push"];
     if (![defaults boolForKey:firstLaunchKey]) {
