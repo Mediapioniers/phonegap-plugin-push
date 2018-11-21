@@ -101,7 +101,7 @@ NSString *const broadcastNotification = @"com.adobe.phonegap.push.BROADCAST_NOTI
                     NSLog(@"Sending custom internal notification");
                     [[NSNotificationCenter defaultCenter]
                         postNotificationName:action
-                        object: userInfo];
+                        object: nil userInfo: userInfo];
                 }
             }
         }
