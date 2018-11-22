@@ -63,6 +63,11 @@ NSString *const broadcastNotification = @"com.adobe.phonegap.push.BROADCAST_NOTI
                                                 name:UIApplicationDidBecomeActiveNotification
                                               object:nil];
 
+    [[NSNotificationCenter defaultCenter]addObserver:self
+                                            selector:@selector(onInternalNotification:)
+                                                name:broadcastNotification
+                                              object:nil];
+
     // This actually calls the original init method over in AppDelegate. Equivilent to calling super
     // on an overrided method, this is not recursive, although it appears that way. neat huh?
     return [self pushPluginSwizzledInit];
@@ -79,10 +84,20 @@ NSString *const broadcastNotification = @"com.adobe.phonegap.push.BROADCAST_NOTI
 }
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+    void (^safeHandler)(UIBackgroundFetchResult) = ^(UIBackgroundFetchResult result){
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completionHandler(result);
+        });
+    };
+    NSMutableDictionary* dataDic = [NSMutableDictionary dictionaryWithCapacity:3];
+    [dataDict setObject:safeHandler forKey:@"completionHandler"];
+    [dataDict setObject:application forKey:@"application"];
+    [dataDict setObject:userInfo forKey:@"userInfo"];
+
     NSString* action = broadcastNotification;
 
     id obj = [userInfo objectForKey:@"receiver"];
-    if(obj != (id)[NSNull null]) {
+    if(obj) {
         NSError *error;
         NSString *jsonString = [obj stringValue];
         NSData *customReceivers = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
@@ -90,7 +105,7 @@ NSString *const broadcastNotification = @"com.adobe.phonegap.push.BROADCAST_NOTI
                                   options:NSJSONReadingMutableContainers
                                   error:&error];
         if(!receiverArray) {
-            NSLog(@"Got an error: %@", error)
+            NSLog(@"Got an error: %@", error);
         } else {
             for(id object in receiverArray) {
                 if([object isKindOfClass:[NSDictionary class]]) {
@@ -101,7 +116,7 @@ NSString *const broadcastNotification = @"com.adobe.phonegap.push.BROADCAST_NOTI
                     NSLog(@"Sending custom internal notification");
                     [[NSNotificationCenter defaultCenter]
                         postNotificationName:action
-                        object: nil userInfo: userInfo];
+                        object: nil userInfo: dataDict];
                 }
             }
         }
@@ -109,11 +124,19 @@ NSString *const broadcastNotification = @"com.adobe.phonegap.push.BROADCAST_NOTI
         NSLog(@"Sending default internal notification");
         [[NSNotificationCenter defaultCenter]
             postNotificationName:action
-            object: userInfo];
+            object: nil userInfo: dataDict];
     }
+}
 
-    NSLog(@"didReceiveNotification with fetchCompletionHandler")
+- (void) onInternalNotification:(NSNotification *) notification {
+    NSDictionary *dataDict = notification.userInfo;
 
+    // Retrieve all the data we need to continue.
+    void (^completionHandler)(UIBackgroundFetchResult) = [[dataDict objectForKey:@"completionHandler"] copy];
+    UIApplication *application = [dataDict objectForKey:@"application"];
+    NSDictionary *userInfo = [dataDict objectForKey:@"userInfo"];
+
+    NSLog(@"didReceiveNotification with fetchCompletionHandler");
     // app is in the background or inactive, so only call notification callback if this is a silent push
     if (application.applicationState != UIApplicationStateActive) {
 
