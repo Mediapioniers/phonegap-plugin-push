@@ -89,17 +89,16 @@ NSString *const broadcastNotification = @"com.adobe.phonegap.push.BROADCAST_NOTI
             completionHandler(result);
         });
     };
-    NSMutableDictionary* dataDic = [NSMutableDictionary dictionaryWithCapacity:3];
+    NSMutableDictionary* dataDict = [NSMutableDictionary dictionaryWithCapacity:2];
+    // This is redundant, but for the sake of simplicity its still here.
     [dataDict setObject:safeHandler forKey:@"completionHandler"];
-    [dataDict setObject:application forKey:@"application"];
     [dataDict setObject:userInfo forKey:@"userInfo"];
 
     NSString* action = broadcastNotification;
 
-    id obj = [userInfo objectForKey:@"receiver"];
-    if(obj) {
+    NSString *jsonString = [userInfo objectForKey:@"receiver"];
+    if(jsonString) {
         NSError *error;
-        NSString *jsonString = [obj stringValue];
         NSData *customReceivers = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
         NSArray *receiverArray = [NSJSONSerialization JSONObjectWithData:customReceivers
                                   options:NSJSONReadingMutableContainers
@@ -126,14 +125,15 @@ NSString *const broadcastNotification = @"com.adobe.phonegap.push.BROADCAST_NOTI
             postNotificationName:action
             object: nil userInfo: dataDict];
     }
+    completionHandler(UIBackgroundFetchResultNewData);
 }
 
 - (void) onInternalNotification:(NSNotification *) notification {
+    UIApplication *application = [UIApplication sharedApplication];
     NSDictionary *dataDict = notification.userInfo;
 
     // Retrieve all the data we need to continue.
     void (^completionHandler)(UIBackgroundFetchResult) = [[dataDict objectForKey:@"completionHandler"] copy];
-    UIApplication *application = [dataDict objectForKey:@"application"];
     NSDictionary *userInfo = [dataDict objectForKey:@"userInfo"];
 
     NSLog(@"didReceiveNotification with fetchCompletionHandler");
