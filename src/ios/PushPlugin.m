@@ -204,16 +204,19 @@
             id alertArg = [iosOptions objectForKey:@"alert"];
             id clearBadgeArg = [iosOptions objectForKey:@"clearBadge"];
 
+            NSLog(@"badgeArg: %@", badgeArg);
             if (([badgeArg isKindOfClass:[NSString class]] && [badgeArg isEqualToString:@"true"]) || [badgeArg boolValue])
             {
                 authorizationOptions |= UNAuthorizationOptionBadge;
             }
 
+            NSLog(@"soundArg: %@", soundArg);
             if (([soundArg isKindOfClass:[NSString class]] && [soundArg isEqualToString:@"true"]) || [soundArg boolValue])
             {
                 authorizationOptions |= UNAuthorizationOptionSound;
             }
 
+            NSLog(@"alertArg: %@", alertArg);
             if (([alertArg isKindOfClass:[NSString class]] && [alertArg isEqualToString:@"true"]) || [alertArg boolValue])
             {
                 authorizationOptions |= UNAuthorizationOptionAlert;
