@@ -207,18 +207,21 @@
             NSLog(@"badgeArg: %@", badgeArg);
             if (([badgeArg isKindOfClass:[NSString class]] && [badgeArg isEqualToString:@"true"]) || [badgeArg boolValue])
             {
+                NSLog(@"badgeArg: %@", badgeArg);
                 authorizationOptions |= UNAuthorizationOptionBadge;
             }
 
             NSLog(@"soundArg: %@", soundArg);
             if (([soundArg isKindOfClass:[NSString class]] && [soundArg isEqualToString:@"true"]) || [soundArg boolValue])
             {
+                NSLog(@"soundArg: %@", soundArg);
                 authorizationOptions |= UNAuthorizationOptionSound;
             }
 
             NSLog(@"alertArg: %@", alertArg);
             if (([alertArg isKindOfClass:[NSString class]] && [alertArg isEqualToString:@"true"]) || [alertArg boolValue])
             {
+                NSLog(@"alertArg: %@", alertArg);
                 authorizationOptions |= UNAuthorizationOptionAlert;
             }
 
