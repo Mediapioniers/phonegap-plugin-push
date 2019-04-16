@@ -205,25 +205,13 @@
             id clearBadgeArg = [iosOptions objectForKey:@"clearBadge"];
 
             NSLog(@"badgeArg: %@", badgeArg);
-            if (([badgeArg isKindOfClass:[NSString class]] && [badgeArg isEqualToString:@"true"]) || [badgeArg boolValue])
-            {
-                NSLog(@"badgeArg: %@", badgeArg);
-                authorizationOptions |= UNAuthorizationOptionBadge;
-            }
+            authorizationOptions |= UNAuthorizationOptionBadge;
 
             NSLog(@"soundArg: %@", soundArg);
-            if (([soundArg isKindOfClass:[NSString class]] && [soundArg isEqualToString:@"true"]) || [soundArg boolValue])
-            {
-                NSLog(@"soundArg: %@", soundArg);
-                authorizationOptions |= UNAuthorizationOptionSound;
-            }
+            authorizationOptions |= UNAuthorizationOptionSound;
 
             NSLog(@"alertArg: %@", alertArg);
-            if (([alertArg isKindOfClass:[NSString class]] && [alertArg isEqualToString:@"true"]) || [alertArg boolValue])
-            {
-                NSLog(@"alertArg: %@", alertArg);
-                authorizationOptions |= UNAuthorizationOptionAlert;
-            }
+            authorizationOptions |= UNAuthorizationOptionAlert;
 
             if (clearBadgeArg == nil || ([clearBadgeArg isKindOfClass:[NSString class]] && [clearBadgeArg isEqualToString:@"false"]) || ![clearBadgeArg boolValue]) {
                 NSLog(@"PushPlugin.register: setting badge to false");
