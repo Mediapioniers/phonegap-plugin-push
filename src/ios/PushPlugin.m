@@ -651,7 +651,9 @@
         switch (settings.authorizationStatus) {
             case UNAuthorizationStatusNotDetermined:
             {
+                NSLog(@"authorizationStatus = UNAuthorizationStatusNotDetermined");
                 [weakCenter requestAuthorizationWithOptions:authorizationOptions completionHandler:^(BOOL granted, NSError * _Nullable error) {
+                    NSLog(@"authorizationStatus Granted: %@", granted);
                     if (granted) {
                         [self performSelectorOnMainThread:@selector(registerForRemoteNotifications)
                                                withObject:nil
@@ -662,13 +664,19 @@
             }
             case UNAuthorizationStatusAuthorized:
             {
+                NSLog(@"authorizationStatus = UNAuthorizationStatusAuthorized");
                 [self performSelectorOnMainThread:@selector(registerForRemoteNotifications)
                                        withObject:nil
                                     waitUntilDone:NO];
                 break;
             }
             case UNAuthorizationStatusDenied:
+            {
+                NSLog(@"authorizationStatus = UNAuthorizationStatusDenied");
+                break;
+            }
             default:
+                NSLog(@"authorizationStatus = default");
                 break;
         }
     }];
