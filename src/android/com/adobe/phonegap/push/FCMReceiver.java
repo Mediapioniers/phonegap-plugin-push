@@ -56,44 +56,51 @@ public class FCMReceiver extends FirebaseMessagingService implements PushConstan
 
   @Override
   public void onMessageReceived(RemoteMessage message) {
-  Bundle extras = new Bundle();
+    Bundle extras = new Bundle();
 
-  for (Map.Entry<String, String> entry : message.getData().entrySet()) {
-  extras.putString(entry.getKey(), entry.getValue());
-}
+    for (Map.Entry<String, String> entry : message.getData().entrySet()) {
+      extras.putString(entry.getKey(), entry.getValue());
+    }
 
-Log.v(LOG_TAG, "Received notification from API" + extras.toString());
+    Log.v(LOG_TAG, "Received notification from API" + extras.toString());
 
-Context applicationContext = getApplicationContext();
-String packageName = applicationContext.getPackageName();
+    Context applicationContext = getApplicationContext();
+    String packageName = applicationContext.getPackageName();
 
-Intent intent = new Intent();
-intent.setPackage(packageName);
-intent.putExtra("message", message);
+    Intent intent = new Intent();
+    intent.setPackage(packageName);
+    intent.putExtra("message", message);
 
-String action = BROADCAST_NOTIFICATION;
+    String action = BROADCAST_NOTIFICATION;
 
-String customReceivers = extras.getString("receiver");
-if (customReceivers != null) {
-  JSONArray receiverArray;
-  JSONObject receiver;
-  try {
-    receiverArray = new JSONArray(customReceivers);
-    for (int i = 0; i < receiverArray.length(); i++) {
-      receiver = receiverArray.getJSONObject(i);
-      Log.v(LOG_TAG, "Received data: " + receiver);
-      action = receiver.getString("action");
+    String customReceivers = extras.getString("receiver");
+    if (customReceivers != null) {
+      JSONArray receiverArray;
+      JSONObject receiver;
+      try {
+        receiverArray = new JSONArray(customReceivers);
+        for (int i = 0; i < receiverArray.length(); i++) {
+          receiver = receiverArray.getJSONObject(i);
+          Log.v(LOG_TAG, "Received data: " + receiver);
+          action = receiver.getString("action");
+          intent.setAction(action);
+          Log.v(LOG_TAG, "Sending custom broadcast");
+          sendBroadcast(intent);
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    } else {
       intent.setAction(action);
-      Log.v(LOG_TAG, "Sending custom broadcast");
+      Log.v(LOG_TAG, "Sending default broadcast");
       sendBroadcast(intent);
     }
-  } catch (Exception e) {
-    e.printStackTrace();
   }
-} else {
-  intent.setAction(action);
-  Log.v(LOG_TAG, "Sending default broadcast");
-  sendBroadcast(intent);
-}
-}
+  
+  @override
+  public void onNewToken(String s) {
+    super.onNewToken(s);
+    Log.d("NEW_TOKEN",s);
+  }
+  
 }
