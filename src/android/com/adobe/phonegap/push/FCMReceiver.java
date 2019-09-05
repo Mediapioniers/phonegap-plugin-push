@@ -74,7 +74,7 @@ public class FCMReceiver extends FirebaseMessagingService implements PushConstan
     String action = BROADCAST_NOTIFICATION;
 
     String customReceivers = extras.getString("receiver");
-    if (customReceivers != null) {
+    if (customReceivers != null && Build.VERSION.SDK_INT < 29) {
       JSONArray receiverArray;
       JSONObject receiver;
       try {
@@ -96,11 +96,11 @@ public class FCMReceiver extends FirebaseMessagingService implements PushConstan
       sendBroadcast(intent);
     }
   }
-  
+
   @Override
   public void onNewToken(String s) {
     super.onNewToken(s);
-    Log.d("NEW_TOKEN",s);
+    Log.d("NEW_TOKEN", s);
   }
-  
+
 }
