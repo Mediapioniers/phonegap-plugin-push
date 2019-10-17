@@ -54,37 +54,37 @@
 
 -(void)initRegistration;
 {
-    NSString * registrationToken = [[FIRInstanceID instanceID] token];
-
-    if (registrationToken != nil) {
-        NSLog(@"FCM Registration Token: %@", registrationToken);
-        [self setFcmRegistrationToken: registrationToken];
-
-        id topics = [self fcmTopics];
-        if (topics != nil) {
-            for (NSString *topic in topics) {
-                NSLog(@"subscribe to topic: %@", topic);
-                id pubSub = [FIRMessaging messaging];
-                [pubSub subscribeToTopic:topic];
-            }
-        }
-
-        [self registerWithToken:registrationToken];
-    } else {
-        NSLog(@"FCM token is null");
-    }
-
+//    NSString * registrationToken = [[FIRInstanceID instanceID] token];
+//
+//    if (registrationToken != nil) {
+//        NSLog(@"FCM Registration Token: %@", registrationToken);
+//        [self setFcmRegistrationToken: registrationToken];
+//
+//        id topics = [self fcmTopics];
+//        if (topics != nil) {
+//            for (NSString *topic in topics) {
+//                NSLog(@"subscribe to topic: %@", topic);
+//                id pubSub = [FIRMessaging messaging];
+//                [pubSub subscribeToTopic:topic];
+//            }
+//        }
+//
+//        [self registerWithToken:registrationToken];
+//    } else {
+//        NSLog(@"FCM token is null");
+//    }
+//
 }
 
 //  FCM refresh token
 //  Unclear how this is testable under normal circumstances
 - (void)onTokenRefresh {
-#if !TARGET_IPHONE_SIMULATOR
-    // A rotation of the registration tokens is happening, so the app needs to request a new token.
-    NSLog(@"The FCM registration token needs to be changed.");
-    [[FIRInstanceID instanceID] token];
-    [self initRegistration];
-#endif
+//#if !TARGET_IPHONE_SIMULATOR
+//    // A rotation of the registration tokens is happening, so the app needs to request a new token.
+//    NSLog(@"The FCM registration token needs to be changed.");
+//    [[FIRInstanceID instanceID] token];
+//    [self initRegistration];
+//#endif
 }
 
 // contains error info
