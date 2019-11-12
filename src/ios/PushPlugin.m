@@ -31,6 +31,7 @@
 @import FirebaseInstanceID;
 @import FirebaseMessaging;
 @import FirebaseAnalytics;
+@import FirebaseCore;
 
 @implementation PushPlugin : CDVPlugin
 
@@ -51,28 +52,43 @@
 @synthesize fcmRegistrationToken;
 @synthesize fcmTopics;
 
+- (void)getToken:(void(^)(NSString*))callback
+{
+    NSString *fcmToken = [FIRMessaging messaging].FCMToken;
+    if (fcmToken) {
+        callback(fcmToken);
+    } else {
+        [[FIRInstanceID instanceID] instanceIDWithHandler:^(FIRInstanceIDResult* result, NSError* err) {
+            if (err) {
+                NSLog(@"Received error: %@", err);
+            } else {
+                callback(result.token);
+            }
+        }];
+    }
+}
+
 -(void)initRegistration;
 {
-    NSString * registrationToken = [[FIRInstanceID instanceID] token];
+    [self getToken:^(NSString* registrationToken) {
+        if (registrationToken != nil) {
+            NSLog(@"FCM Registration Token: %@", registrationToken);
+            [self setFcmRegistrationToken: registrationToken];
 
-    if (registrationToken != nil) {
-        NSLog(@"FCM Registration Token: %@", registrationToken);
-        [self setFcmRegistrationToken: registrationToken];
-
-        id topics = [self fcmTopics];
-        if (topics != nil) {
-            for (NSString *topic in topics) {
-                NSLog(@"subscribe to topic: %@", topic);
-                id pubSub = [FIRMessaging messaging];
-                [pubSub subscribeToTopic:topic];
+            id topics = [self fcmTopics];
+            if (topics != nil) {
+                for (NSString *topic in topics) {
+                    NSLog(@"subscribe to topic: %@", topic);
+                    id pubSub = [FIRMessaging messaging];
+                    [pubSub subscribeToTopic:topic];
+                }
             }
+
+            [self registerWithToken:registrationToken];
+        } else {
+            NSLog(@"FCM token is null");
         }
-
-        [self registerWithToken:registrationToken];
-    } else {
-        NSLog(@"FCM token is null");
-    }
-
+    }];
 }
 
 //  FCM refresh token
@@ -81,7 +97,6 @@
 #if !TARGET_IPHONE_SIMULATOR
     // A rotation of the registration tokens is happening, so the app needs to request a new token.
     NSLog(@"The FCM registration token needs to be changed.");
-    [[FIRInstanceID instanceID] token];
     [self initRegistration];
 #endif
 }
