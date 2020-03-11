@@ -65,33 +65,33 @@ public class FCMReceiver extends FirebaseMessagingService implements PushConstan
     Log.v(LOG_TAG, "Received notification from API" + extras.toString());
 
     Context applicationContext = getApplicationContext();
-    String packageName = applicationContext.getPackageName();
-
-    Intent intent = new Intent();
-    intent.setPackage(packageName);
-    intent.putExtra("message", message);
-
-    String action = BROADCAST_NOTIFICATION;
-
     String customReceivers = extras.getString("receiver");
-    if (customReceivers != null && Build.VERSION.SDK_INT < 29) {
-      JSONArray receiverArray;
-      JSONObject receiver;
+    if (customReceivers != null) {
       try {
-        receiverArray = new JSONArray(customReceivers);
+        JSONArray receiverArray = new JSONArray(customReceivers);
         for (int i = 0; i < receiverArray.length(); i++) {
-          receiver = receiverArray.getJSONObject(i);
+          JSONObject receiver = receiverArray.getJSONObject(i);
           Log.v(LOG_TAG, "Received data: " + receiver);
-          action = receiver.getString("action");
-          intent.setAction(action);
-          Log.v(LOG_TAG, "Sending custom broadcast");
-          sendBroadcast(intent);
+
+          // This allows use to dynamically start a service from a push.
+          String serviceClass = receiver.optString("service", "cordova.plugin.mobilea.push.handler.CallService");
+
+          Intent service = new Intent();
+          service.setClassName(applicationContext, serviceClass);
+          service.putExtra("message", message);
+          service.setAction(receiver.getString("action"));
+
+          Log.v(LOG_TAG, "Starting service '" + serviceClass + "'");
+          applicationContext.startService(service);
         }
       } catch (Exception e) {
         e.printStackTrace();
       }
     } else {
-      intent.setAction(action);
+      Intent intent = new Intent();
+      intent.setPackage(applicationContext.getPackageName());
+      intent.putExtra("message", message);
+      intent.setAction(BROADCAST_NOTIFICATION);
       Log.v(LOG_TAG, "Sending default broadcast");
       sendBroadcast(intent);
     }
