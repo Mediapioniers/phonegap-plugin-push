@@ -89,7 +89,7 @@
         <source url="https://github.com/CocoaPods/Specs.git"/>
       </config>
       <pods>
-        <pod name="Firebase/Messaging" spec="~> 6.8.1"/>
+        <pod name="Firebase/Messaging" spec="~> 6.9.0"/>
       </pods>
     </podspec>
     <framework src="PushKit.framework"/>
